@@ -3,8 +3,7 @@ from ledger.models import JournalEntry
 from django.db.models import F
 
 def get_insights_dataframe():
-    # 1. Fetch data with related names (Joins)
-    # We use F() expressions to pull the related fields directly
+    # Fetch data using the exact field names from your models
     data = JournalEntry.objects.annotate(
         date=F('transaction__date'),
         account_name=F('account__name'),
@@ -13,16 +12,16 @@ def get_insights_dataframe():
 
     df = pd.DataFrame(list(data))
 
-    if not df.empty:
-        # Convert to proper types
-        df['date'] = pd.to_datetime(df['date'])
-        df['debit'] = df['debit'].astype(float)
-        df['credit'] = df['credit'].astype(float)
-        
-        # Add a 'Net' column for easier plotting
-        df['amount'] = df['debit'] - df['credit']
-        
-        # Sort by date
-        df = df.sort_values('date')
-        
+    # Fix: If the database is empty, create an empty DF with the right columns
+    if df.empty:
+        return pd.DataFrame(columns=['date', 'account_name', 'category', 'debit', 'credit', 'amount'])
+
+    # Ensure numeric types (Decimal objects from Django can break Pandas math)
+    df['debit'] = pd.to_numeric(df['debit'], errors='coerce').fillna(0)
+    df['credit'] = pd.to_numeric(df['credit'], errors='coerce').fillna(0)
+    
+    # Calculate Net Amount
+    df['amount'] = df['debit'] - df['credit']
+    df['date'] = pd.to_datetime(df['date'])
+    
     return df
