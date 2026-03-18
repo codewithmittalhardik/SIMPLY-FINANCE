@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body class="bg-gray-50 p-6">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Financial Insights</h1>
+            <p class="text-gray-500">Real-time analysis of your MySQL Ledger</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-sm font-medium text-gray-400">Total Expenses (30 Days)</p>
+                <p class="text-2xl font-bold text-red-500">${{ total_spent }}</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <p class="text-sm font-medium text-gray-400">Total Income</p>
+                <p class="text-2xl font-bold text-green-500">${{ total_income }}</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <h3 class="text-lg font-bold mb-4">Spending by Category</h3>
+            <div id="categoryChart"></div>
+        </div>
+    </div>
+
+    <script>
+        const categoryData = {{ category_data|safe }};
+        const labels = Object.keys(categoryData);
+        const values = Object.values(categoryData);
+
+        const data = [{
+            x: labels,
+            y: values,
+            type: 'bar',
+            marker: { color: '#3b82f6' }
+        }];
+
+        Plotly.newPlot('categoryChart', data, {
+            margin: { t: 0 },
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)'
+        });
+    </script>
+</body>
+</html>
